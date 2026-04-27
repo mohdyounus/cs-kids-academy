@@ -309,22 +309,13 @@
       position: fixed; inset: 0; pointer-events: none; z-index: 998;
     }
 
-    /* ===== TRANSLATION SPINNER ===== */
-    #translate-spinner {
-      display: none; position: fixed;
-      top: 70px; right: 18px; z-index: 200;
-      background: #fff; border-radius: 30px;
-      padding: 8px 16px; font-size: .88rem; font-weight: 700;
-      color: var(--text); box-shadow: var(--shadow);
-      align-items: center; gap: 8px;
-    }
-    #translate-spinner.show { display: flex; }
-    .spinner-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--sky);
-      animation: spinPulse 1s infinite alternate;
-    }
-    @keyframes spinPulse { from{opacity:.25} to{opacity:1} }
+    /* ===== GOOGLE TRANSLATE — hide their banner/toolbar ===== */
+    .goog-te-banner-frame, .skiptranslate iframe { display: none !important; }
+    body { top: 0 !important; }
+    #goog-gt-tt, .goog-te-balloon-frame, .goog-tooltip { display: none !important; }
+    .goog-te-gadget { display: none !important; }
+    /* Keep our custom dropdown styled */
+    .VIpgJd-ZVi9od-l4eHX-hSRGPd, .VIpgJd-ZVi9od-ORHb { display: none !important; }
 
     /* ===== MISC ===== */
     @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -378,8 +369,8 @@
   </select>
 </div>
 
-<!-- Translation spinner -->
-<div id="translate-spinner"><div class="spinner-dot"></div> Translating…</div>
+<!-- Hidden Google Translate element -->
+<div id="google_translate_element" style="display:none"></div>
 
 <!-- Layout -->
 <div id="layout">
@@ -834,7 +825,6 @@ let currentChapter = -1;
 let progress = JSON.parse(localStorage.getItem('cska_progress') || '{}');
 let quizPassed = JSON.parse(localStorage.getItem('cska_quiz') || '{}');
 let currentLang = 'en';
-const translationCache = {};
 let confettiAnim = null;
 
 // ============================================================
@@ -1149,63 +1139,47 @@ function closeCert() {
 }
 
 // ============================================================
-//  TRANSLATION  (LibreTranslate public demo)
+//  TRANSLATION  (Google Translate Widget — free, no API key)
 // ============================================================
-const LIBRE_URL = 'https://libretranslate.com/translate';
 
-async function translateText(text, target) {
-  const key = target + '::' + text;
-  if (translationCache[key]) return translationCache[key];
-  const resp = await fetch(LIBRE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ q: text, source: 'en', target, format: 'text' })
-  });
-  if (!resp.ok) return text; // fallback
-  const data = await resp.json();
-  const result = data.translatedText || text;
-  translationCache[key] = result;
-  return result;
-}
-
-async function applyTranslation(lang) {
+// Set googtrans cookie then reload — GT widget reads it on load
+function setGTCookie(lang) {
+  const host = window.location.hostname;
   if (lang === 'en') {
-    location.reload(); // simplest way to restore English
-    return;
+    const past = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    document.cookie = 'googtrans=; ' + past;
+    document.cookie = 'googtrans=; ' + past + '; domain=' + host;
+    document.cookie = 'googtrans=; ' + past + '; domain=.' + host;
+  } else {
+    const val = '/en/' + lang;
+    document.cookie = 'googtrans=' + val + '; path=/';
+    document.cookie = 'googtrans=' + val + '; path=/; domain=' + host;
+    document.cookie = 'googtrans=' + val + '; path=/; domain=.' + host;
   }
-  const spinner = document.getElementById('translate-spinner');
-  spinner.classList.add('show');
-  const nodes = [];
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      const p = node.parentElement;
-      if (!p || ['SCRIPT','STYLE','OPTION','INPUT','CODE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-      if (node.textContent.trim() === '') return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
-    }
-  });
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-
-  // batch translate unique strings
-  const unique = [...new Set(nodes.map(n => n.textContent.trim()))];
-  await Promise.all(unique.map(t => translateText(t, lang)));
-
-  for (const node of nodes) {
-    const orig = node.textContent.trim();
-    const key = lang + '::' + orig;
-    if (translationCache[key]) node.textContent = translationCache[key];
-  }
-  spinner.classList.remove('show');
 }
 
-document.getElementById('lang-select').addEventListener('change', async e => {
+document.getElementById('lang-select').addEventListener('change', function(e) {
   const lang = e.target.value;
-  currentLang = lang;
-  const html = document.documentElement;
-  if (lang === 'ur') { html.setAttribute('dir', 'rtl'); html.setAttribute('lang', 'ur'); }
-  else { html.setAttribute('dir', 'ltr'); html.setAttribute('lang', lang); }
-  await applyTranslation(lang);
+  setGTCookie(lang);
+  location.reload();
 });
+
+// On page load: sync dropdown + RTL to the active googtrans cookie
+(function syncLangOnLoad() {
+  const match = document.cookie.match(/googtrans=\/en\/(\w+)/);
+  if (match) {
+    const lang = match[1];
+    currentLang = lang;
+    const sel = document.getElementById('lang-select');
+    if (sel) sel.value = lang;
+    if (lang === 'ur') {
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.documentElement.setAttribute('lang', 'ur');
+    } else {
+      document.documentElement.setAttribute('lang', lang);
+    }
+  }
+})();
 
 // ============================================================
 //  INIT
@@ -1214,5 +1188,17 @@ updateProgressBar();
 updateNavList();
 updateHomeGrid();
 </script>
+
+<!-- Google Translate Widget (free, no API key needed) -->
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'hi,ur',
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async defer></script>
 </body>
 </html>
