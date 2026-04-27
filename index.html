@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS Kids Academy 🚀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sky:    #4FC3F7;
+      --yellow: #FFD54F;
+      --green:  #81C784;
+      --purple: #CE93D8;
+      --pink:   #F48FB1;
+      --bg:     #F0F8FF;
+      --card:   #FFFFFF;
+      --text:   #2E3A59;
+      --radius: 18px;
+      --shadow: 0 4px 20px rgba(0,0,0,.10);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== TOP BAR ===== */
+    #topbar {
+      background: linear-gradient(135deg, #4FC3F7 0%, #CE93D8 100%);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
+    }
+    #topbar h1 { color: #fff; font-size: 1.5rem; font-weight: 900; letter-spacing: .5px; }
+    #topbar h1 span { font-size: 1.6rem; }
+    #lang-select {
+      padding: 7px 14px;
+      border-radius: 30px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,.25);
+      color: #fff;
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+    }
+    #lang-select option { color: var(--text); background: #fff; }
+
+    /* ===== LAYOUT ===== */
+    #layout { display: flex; gap: 0; min-height: calc(100vh - 60px); }
+
+    /* ===== SIDEBAR ===== */
+    #sidebar {
+      width: 270px;
+      min-width: 220px;
+      background: var(--card);
+      border-right: 2px solid #e3eef7;
+      padding: 24px 14px;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    #sidebar h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: 1.2px; color: #aaa; margin-bottom: 12px; padding-left: 8px; }
+    #progress-wrap { margin-bottom: 20px; }
+    #progress-text { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    #progress-bar-outer { background: #e0e0e0; border-radius: 20px; height: 12px; overflow: hidden; }
+    #progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--green), #43A047); border-radius: 20px; width: 0%; transition: width .5s ease; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 12px;
+      cursor: pointer; font-weight: 700; font-size: .93rem;
+      transition: background .2s, transform .1s;
+      margin-bottom: 4px;
+    }
+    .nav-item:hover { background: #EEF7FF; transform: translateX(3px); }
+    .nav-item.active { background: linear-gradient(90deg, #4FC3F7 0%, #81C784 100%); color: #fff; }
+    .nav-item .nav-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .nav-item .nav-check { margin-left: auto; color: #43A047; font-size: 1.1rem; opacity: 0; transition: opacity .3s; }
+    .nav-item.done .nav-check { opacity: 1; }
+
+    /* ===== MAIN CONTENT ===== */
+    #main {
+      flex: 1;
+      padding: 32px 28px;
+      max-width: 860px;
+    }
+
+    /* ===== HOME SCREEN ===== */
+    #home-screen { animation: fadeIn .5s ease; }
+    .home-hero {
+      background: linear-gradient(135deg, #4FC3F7 0%, #CE93D8 100%);
+      border-radius: var(--radius);
+      padding: 48px 36px;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-hero h2 { font-size: 2.4rem; font-weight: 900; margin-bottom: 10px; }
+    .home-hero p  { font-size: 1.1rem; opacity: .92; max-width: 520px; margin: 0 auto 24px; }
+    .mascot { font-size: 5rem; display: block; margin-bottom: 8px; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .btn-start {
+      background: var(--yellow); color: #5D4037;
+      border: none; border-radius: 30px;
+      padding: 14px 36px; font-family: inherit;
+      font-size: 1.1rem; font-weight: 800;
+      cursor: pointer; box-shadow: var(--shadow);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-start:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+
+    .chapters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .chapter-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+      border-top: 5px solid var(--sky);
+    }
+    .chapter-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,.14); }
+    .chapter-card .card-num { font-size: .78rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
+    .chapter-card .card-icon { font-size: 2.4rem; margin: 6px 0; }
+    .chapter-card h3 { font-size: 1rem; font-weight: 800; }
+    .chapter-card .done-badge {
+      position: absolute; top: 10px; right: 12px;
+      background: var(--green); color: #fff;
+      border-radius: 50%; width: 26px; height: 26px;
+      display: none; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .chapter-card.done .done-badge { display: flex; }
+
+    /* ===== CHAPTER VIEW ===== */
+    #chapter-view { display: none; animation: fadeIn .4s ease; }
+    .chapter-header {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px 28px 20px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+      border-left: 6px solid var(--sky);
+    }
+    .chapter-header .ch-num { font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
+    .chapter-header h2 { font-size: 2rem; font-weight: 900; margin: 6px 0 8px; }
+    .chapter-header .ch-intro { font-size: 1.05rem; line-height: 1.65; color: #556; }
+    .chapter-header .ch-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-read {
+      background: var(--purple); color: #fff; border: none;
+      border-radius: 30px; padding: 8px 20px;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .btn-read:hover { opacity: .85; }
+
+    .section-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 22px 24px; margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+    .section-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .section-card p, .section-card li { font-size: 1rem; line-height: 1.7; color: #445; }
+    .section-card ul { padding-left: 20px; margin-top: 6px; }
+    .section-card li { margin-bottom: 4px; }
+    .section-card .analogy {
+      background: #FFF9C4; border-left: 4px solid #FFD54F;
+      border-radius: 8px; padding: 12px 16px; margin-top: 12px;
+      font-style: italic; font-size: .98rem;
+    }
+    .section-card .analogy::before { content: "💡 "; font-style: normal; }
+
+    .fun-fact {
+      background: linear-gradient(135deg, #E1F5FE 0%, #F3E5F5 100%);
+      border-radius: var(--radius); padding: 18px 22px;
+      margin-bottom: 18px; box-shadow: var(--shadow);
+      border: 2px dashed var(--sky);
+    }
+    .fun-fact h4 { font-size: 1rem; font-weight: 800; color: #1976D2; margin-bottom: 6px; }
+    .fun-fact p { font-size: .98rem; color: #445; line-height: 1.65; }
+
+    .lottie-wrap {
+      text-align: center; margin-bottom: 18px;
+    }
+    .lottie-wrap img {
+      max-width: 220px; border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ===== QUIZ ===== */
+    .quiz-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 18px;
+      box-shadow: var(--shadow); border-top: 5px solid var(--yellow);
+    }
+    .quiz-card h4 { font-size: 1.05rem; font-weight: 800; margin-bottom: 14px; }
+    .quiz-q { margin-bottom: 20px; }
+    .quiz-q p { font-weight: 700; font-size: .98rem; margin-bottom: 10px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-radius: 10px; border: 2px solid #e0e0e0;
+      margin-bottom: 8px; cursor: pointer;
+      font-size: .95rem; font-weight: 600;
+      transition: border-color .2s, background .2s;
+    }
+    .quiz-option:hover { border-color: var(--sky); background: #EBF6FF; }
+    .quiz-option.correct { border-color: #43A047; background: #E8F5E9; }
+    .quiz-option.wrong   { border-color: #E53935; background: #FFEBEE; }
+    .quiz-option input[type=radio] { accent-color: var(--sky); }
+    .quiz-feedback { font-size: .9rem; font-weight: 700; margin-top: 4px; min-height: 20px; }
+    .quiz-feedback.ok  { color: #43A047; }
+    .quiz-feedback.err { color: #E53935; }
+    .btn-check {
+      background: var(--sky); color: #fff; border: none;
+      border-radius: 30px; padding: 10px 28px;
+      font-family: inherit; font-size: .95rem; font-weight: 800;
+      cursor: pointer; margin-top: 10px;
+      transition: opacity .2s;
+    }
+    .btn-check:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-check:hover:not(:disabled) { opacity: .88; }
+
+    /* ===== MARK COMPLETE ===== */
+    .complete-wrap {
+      text-align: center; padding: 22px;
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); margin-bottom: 28px;
+    }
+    .btn-complete {
+      background: linear-gradient(135deg, #81C784, #43A047);
+      color: #fff; border: none; border-radius: 30px;
+      padding: 14px 40px; font-family: inherit;
+      font-size: 1.05rem; font-weight: 800;
+      cursor: pointer; box-shadow: var(--shadow);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-complete:hover:not(:disabled) { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+    .btn-complete:disabled { background: linear-gradient(135deg, #a5d6a7, #81c784); cursor: not-allowed; }
+    .btn-complete.done {
+      background: linear-gradient(135deg, #43A047, #2E7D32);
+    }
+    .complete-hint { font-size: .88rem; color: #aaa; margin-top: 8px; }
+
+    /* ===== CERTIFICATE ===== */
+    #cert-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55); z-index: 999;
+      align-items: center; justify-content: center;
+    }
+    #cert-overlay.show { display: flex; }
+    #cert-box {
+      background: #fff; border-radius: 24px;
+      padding: 42px 48px; text-align: center;
+      max-width: 520px; width: 90%;
+      box-shadow: 0 12px 50px rgba(0,0,0,.25);
+      animation: popIn .4s cubic-bezier(.17,.67,.32,1.4);
+    }
+    @keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+    #cert-box .cert-title { font-size: 1.3rem; color: #aaa; font-weight: 700; letter-spacing: 2px; }
+    #cert-box h2 { font-size: 2rem; font-weight: 900; margin: 12px 0; color: #2E3A59; }
+    #cert-box .cert-name-line { font-size: 1.15rem; color: #666; margin-bottom: 16px; }
+    #cert-box .cert-name { display: block; font-size: 2rem; font-weight: 900; color: #4FC3F7; margin-bottom: 4px; }
+    #cert-box .cert-desc { font-size: .95rem; color: #888; line-height: 1.6; margin-bottom: 20px; }
+    #cert-name-input {
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      padding: 10px 16px; font-family: inherit; font-size: 1rem;
+      width: 100%; margin-bottom: 14px; outline: none;
+    }
+    #cert-name-input:focus { border-color: var(--sky); }
+    #cert-print-btn {
+      background: var(--yellow); color: #5D4037;
+      border: none; border-radius: 30px;
+      padding: 12px 32px; font-family: inherit;
+      font-size: 1rem; font-weight: 800; cursor: pointer;
+      margin-right: 10px; transition: transform .15s;
+    }
+    #cert-print-btn:hover { transform: scale(1.05); }
+    #cert-close-btn {
+      background: #eee; color: #666;
+      border: none; border-radius: 30px;
+      padding: 12px 24px; font-family: inherit;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+    }
+
+    /* ===== CONFETTI ===== */
+    #confetti-canvas {
+      position: fixed; inset: 0; pointer-events: none; z-index: 998;
+    }
+
+    /* ===== TRANSLATION SPINNER ===== */
+    #translate-spinner {
+      display: none; position: fixed;
+      top: 70px; right: 18px; z-index: 200;
+      background: #fff; border-radius: 30px;
+      padding: 8px 16px; font-size: .88rem; font-weight: 700;
+      color: var(--text); box-shadow: var(--shadow);
+      align-items: center; gap: 8px;
+    }
+    #translate-spinner.show { display: flex; }
+    .spinner-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--sky);
+      animation: spinPulse 1s infinite alternate;
+    }
+    @keyframes spinPulse { from{opacity:.25} to{opacity:1} }
+
+    /* ===== MISC ===== */
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .back-btn {
+      background: none; border: 2px solid #ccc;
+      border-radius: 30px; padding: 8px 20px;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      cursor: pointer; margin-bottom: 18px;
+      color: var(--text); transition: border-color .2s;
+    }
+    .back-btn:hover { border-color: var(--sky); }
+    .nav-prev-next { display: flex; gap: 12px; margin-top: 8px; margin-bottom: 28px; }
+    .nav-prev-next button {
+      flex: 1; background: var(--card);
+      border: 2px solid #e0e0e0; border-radius: 14px;
+      padding: 12px; font-family: inherit; font-size: .95rem;
+      font-weight: 700; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .nav-prev-next button:hover { border-color: var(--sky); background: #EBF6FF; }
+
+    /* RTL support */
+    html[dir=rtl] #sidebar { border-right: none; border-left: 2px solid #e3eef7; }
+    html[dir=rtl] .chapter-header { border-left: none; border-right: 6px solid var(--sky); }
+    html[dir=rtl] .nav-item:hover { transform: translateX(-3px); }
+    html[dir=rtl] .section-card .analogy { border-left: none; border-right: 4px solid #FFD54F; }
+
+    /* Responsive */
+    @media(max-width: 680px) {
+      #sidebar { display: none; }
+      #main { padding: 18px 14px; }
+      .home-hero h2 { font-size: 1.6rem; }
+    }
+
+    @media print {
+      #topbar, #sidebar, #confetti-canvas, #translate-spinner { display: none !important; }
+      #cert-overlay { position: static; background: none; }
+      #cert-box { box-shadow: none; padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <h1><span>🤖</span> CS Kids Academy</h1>
+  <select id="lang-select" aria-label="Select language">
+    <option value="en">🇬🇧 English</option>
+    <option value="hi">🇮🇳 हिन्दी</option>
+    <option value="ur">🇵🇰 اردو</option>
+  </select>
+</div>
+
+<!-- Translation spinner -->
+<div id="translate-spinner"><div class="spinner-dot"></div> Translating…</div>
+
+<!-- Layout -->
+<div id="layout">
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div id="progress-wrap">
+      <div id="progress-text">0 of 8 chapters done</div>
+      <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+    </div>
+    <h2>Chapters</h2>
+    <div id="nav-list"></div>
+  </nav>
+
+  <!-- MAIN -->
+  <main id="main">
+    <!-- Home screen -->
+    <div id="home-screen">
+      <div class="home-hero">
+        <span class="mascot">🤖</span>
+        <h2>Welcome to CS Kids Academy!</h2>
+        <p>Learn how computers work, what algorithms are, how the internet works, and much more — all in a fun way! 🎉</p>
+        <button class="btn-start" onclick="showChapter(0)">Start Learning → Chapter 1</button>
+      </div>
+      <div class="chapters-grid" id="home-grid"></div>
+    </div>
+
+    <!-- Chapter view -->
+    <div id="chapter-view">
+      <button class="back-btn" onclick="showHome()">← Back to Home</button>
+      <div id="chapter-content"></div>
+      <div class="nav-prev-next">
+        <button id="btn-prev" onclick="goChapter(-1)">← Previous</button>
+        <button id="btn-next" onclick="goChapter(1)">Next →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Certificate overlay -->
+<div id="cert-overlay">
+  <div id="cert-box">
+    <div class="cert-title">🏆 CERTIFICATE OF ACHIEVEMENT</div>
+    <h2>Amazing Work! 🎉</h2>
+    <p class="cert-name-line">This certificate is proudly awarded to</p>
+    <input id="cert-name-input" type="text" placeholder="Enter your name here…" />
+    <span class="cert-name" id="cert-name-display"></span>
+    <p class="cert-desc">For successfully completing all 8 chapters of<br><strong>CS Kids Academy</strong> and becoming a Computer Science Explorer! 🚀</p>
+    <button id="cert-print-btn" onclick="printCert()">🖨️ Print Certificate</button>
+    <button id="cert-close-btn" onclick="closeCert()">Close</button>
+  </div>
+</div>
+
+<!-- Confetti canvas -->
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ============================================================
+//  DATA: All 8 chapters
+// ============================================================
+const CHAPTERS = [
+  {
+    id: 0,
+    icon: "💻",
+    color: "#4FC3F7",
+    title: "What is a Computer?",
+    intro: "Computers are amazing machines that help us do all kinds of things — play games, draw, write stories, and even talk to friends far away! But what's actually inside a computer? Let's find out! 🕵️",
+    gif: "https://media.giphy.com/media/077i6AULCXc0FKTj9s/giphy.gif",
+    gifAlt: "A cute animated robot waving hello",
+    sections: [
+      {
+        icon: "🧠",
+        heading: "The Brain — CPU",
+        text: "The <strong>CPU (Central Processing Unit)</strong> is the brain of the computer. Every time you click a button, type a letter, or open a game, the CPU figures out what to do. It's incredibly fast — modern CPUs can do <em>billions</em> of things every single second!",
+        analogy: "Think of the CPU like a chef in a restaurant. The chef reads every order and decides what to cook and in what order."
+      },
+      {
+        icon: "🎒",
+        heading: "Short-Term Memory — RAM",
+        text: "<strong>RAM (Random Access Memory)</strong> is where the computer keeps things it's currently working on. When you open a game, it loads into RAM so the CPU can reach it super fast. RAM is like a desk where you spread out your homework.",
+        analogy: "RAM is like your school backpack: you can only fit so many things in it, and when you go home you take everything out!"
+      },
+      {
+        icon: "📦",
+        heading: "Storage — The Hard Drive / SSD",
+        text: "The <strong>hard drive or SSD</strong> is where everything is saved permanently — your games, photos, videos, and apps. Unlike RAM, it doesn't forget when you turn off the computer.",
+        analogy: "Storage is like a bookshelf: you can put books there and they stay forever until you decide to throw one away."
+      },
+      {
+        icon: "🖥️",
+        heading: "Input & Output Devices",
+        text: "<strong>Input devices</strong> send information TO the computer (keyboard, mouse, microphone, camera). <strong>Output devices</strong> send information FROM the computer to you (screen, speakers, printer).",
+        analogy: null
+      }
+    ],
+    funFact: "The first computer, ENIAC (1945), weighed about 30 tons and filled an entire room! Today your phone is millions of times more powerful. 🤯",
+    quiz: [
+      {
+        q: "What is the 'brain' of a computer called?",
+        options: ["RAM", "CPU", "SSD", "Screen"],
+        answer: 1
+      },
+      {
+        q: "Which part of the computer stores things permanently (even after turning off)?",
+        options: ["CPU", "RAM", "Hard Drive / SSD", "Keyboard"],
+        answer: 2
+      },
+      {
+        q: "A keyboard is an example of what?",
+        options: ["Output device", "Storage", "Input device", "CPU"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 1,
+    icon: "🔢",
+    color: "#FFD54F",
+    title: "How Computers Think",
+    intro: "Did you know computers only understand two things: 0 and 1? Everything you see on a screen — pictures, words, videos — is secretly just a huge bunch of zeros and ones! Let's see how that works. ⚡",
+    gif: "https://media.giphy.com/media/3o7buirYcmV5nSwIRW/giphy.gif",
+    gifAlt: "Animated binary numbers flowing",
+    sections: [
+      {
+        icon: "💡",
+        heading: "Light Switches & Binary",
+        text: "Computers are made of billions of tiny switches called <strong>transistors</strong>. Each switch is either OFF (0) or ON (1). All information is stored using these two states. This system of 0s and 1s is called <strong>binary</strong>.",
+        analogy: "Imagine you and your friend have a row of light switches. OFF = 0, ON = 1. You can use patterns of switches to send secret messages!"
+      },
+      {
+        icon: "🔤",
+        heading: "Bits & Bytes",
+        text: "A single 0 or 1 is called a <strong>bit</strong>. Eight bits together make a <strong>byte</strong>. A byte can represent a single letter. Your favourite song is about 5 million bytes (5 Megabytes) of 0s and 1s!",
+        analogy: null
+      },
+      {
+        icon: "🔢",
+        heading: "Counting in Binary",
+        text: "In everyday life we use 10 digits (0–9). Computers use only 2 digits (0 and 1). The number <strong>5</strong> in binary is <strong>101</strong>. The number <strong>10</strong> in binary is <strong>1010</strong>. Cool, right?",
+        analogy: "Try it! Hold up fingers on one hand. Each finger is a bit. How high can you count with 5 fingers in binary? Up to 31!"
+      }
+    ],
+    funFact: "The word 'bit' is short for <b>B</b>inary dig<b>IT</b>. And 'byte' was chosen because it rhymes with 'bite'! 😄",
+    quiz: [
+      {
+        q: "What are the only two digits used in binary?",
+        options: ["1 and 2", "0 and 1", "A and B", "Yes and No"],
+        answer: 1
+      },
+      {
+        q: "How many bits make one byte?",
+        options: ["4", "16", "8", "2"],
+        answer: 2
+      },
+      {
+        q: "What is the binary for the number 5?",
+        options: ["110", "011", "101", "000"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 2,
+    icon: "📋",
+    color: "#81C784",
+    title: "What is an Algorithm?",
+    intro: "An algorithm is just a fancy word for a list of step-by-step instructions that solves a problem. Computers follow algorithms to do everything they do. You already use algorithms every day! 🍪",
+    gif: "https://media.giphy.com/media/xT0xeuOy2Fcl9vDGiA/giphy.gif",
+    gifAlt: "Animated cookie recipe steps",
+    sections: [
+      {
+        icon: "🍪",
+        heading: "A Recipe is an Algorithm",
+        text: "A cookie recipe tells you exactly what to do, step by step:\n1. Mix butter and sugar\n2. Add eggs\n3. Stir in flour\n4. Bake at 180°C for 12 minutes\n\nA computer algorithm works exactly the same way — precise steps, in order, with nothing left out.",
+        analogy: "If you skipped step 1 and straight-up added flour to nothing, the cookies would be terrible! Algorithms must be complete and in the right order."
+      },
+      {
+        icon: "📦",
+        heading: "Sorting — A Real Algorithm",
+        text: "Sorting things in order is a classic computer problem. Imagine 10 mixed-up cards. One algorithm (Bubble Sort) compares two cards at a time and swaps them if they're in the wrong order, over and over, until everything is sorted.",
+        analogy: null
+      },
+      {
+        icon: "🗺️",
+        heading: "Algorithms Are Everywhere",
+        text: "Google Maps uses an algorithm to find the fastest route. YouTube uses an algorithm to suggest videos you might like. Even your school test marking might use an algorithm!",
+        analogy: null
+      }
+    ],
+    funFact: "The word 'algorithm' comes from a 9th-century Persian mathematician named <b>Al-Khwarizmi</b>, who wrote an early book about step-by-step problem solving. 📜",
+    quiz: [
+      {
+        q: "What best describes an algorithm?",
+        options: ["A type of computer", "A step-by-step set of instructions", "A coding language", "A computer virus"],
+        answer: 1
+      },
+      {
+        q: "Why must steps in an algorithm be in the right order?",
+        options: ["To look neat", "Because computers are slow", "Skipping or misordering steps gives wrong results", "Algorithms don't need an order"],
+        answer: 2
+      },
+      {
+        q: "Where do we find algorithms in real life?",
+        options: ["Only in computers", "Only in maths class", "Everywhere: maps, social media, cooking", "Only in books"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 3,
+    icon: "🖋️",
+    color: "#CE93D8",
+    title: "Meet Programming Languages",
+    intro: "Computers can't understand English (yet!). We need to talk to them in special languages called programming languages. Let's learn what code actually looks like! 🧑‍💻",
+    gif: "https://media.giphy.com/media/LmNwrBhejkK9EFP504/giphy.gif",
+    gifAlt: "Animated code on a screen",
+    sections: [
+      {
+        icon: "🌐",
+        heading: "What is Code?",
+        text: "Code is a set of instructions written in a language that a computer can understand. Just like you can speak English, Urdu, or Hindi, computers have their own languages: <strong>Python, JavaScript, Scratch, Java</strong>, and many more!",
+        analogy: "Writing code is like writing a very strict recipe where you cannot say 'add some flour' — you must say exactly '200 grams of flour', or the computer won't understand!"
+      },
+      {
+        icon: "🐍",
+        heading: "Python — Friendly for Beginners",
+        text: `Python is one of the most popular languages because it reads almost like English. Here's how you make the computer say hello:<br><br>
+<code style="display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.95rem;">print("Hello, World! 🌍")</code><br>
+And here's a loop that counts to 5:<br><br>
+<code style="display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.95rem;">for i in range(1, 6):<br>&nbsp;&nbsp;&nbsp;&nbsp;print(i)</code>`,
+        analogy: null
+      },
+      {
+        icon: "🧱",
+        heading: "Scratch — Code with Blocks",
+        text: "<strong>Scratch</strong> (scratch.mit.edu) lets you program by dragging colourful puzzle pieces together. There's no typing needed! It's made especially for kids and is used in schools all over the world.",
+        analogy: "Scratch is like building a LEGO set, but instead of building a spaceship, you're building a game or a story!"
+      }
+    ],
+    funFact: "There are over <b>700</b> programming languages in the world! Python was named after the British comedy show <em>Monty Python's Flying Circus</em>. 🐍😂",
+    quiz: [
+      {
+        q: "Which of these is a programming language?",
+        options: ["Microsoft Word", "Python", "Google Chrome", "PowerPoint"],
+        answer: 1
+      },
+      {
+        q: "What does the Python command print('Hello') do?",
+        options: ["Prints a paper", "Shows 'Hello' on the screen", "Deletes a file", "Opens a browser"],
+        answer: 1
+      },
+      {
+        q: "What is Scratch?",
+        options: ["A scratch card game", "A block-based visual coding tool for kids", "A type of CPU", "An internet browser"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 4,
+    icon: "🌐",
+    color: "#F48FB1",
+    title: "The Internet & How It Works",
+    intro: "The internet connects billions of computers around the whole world! When you watch a YouTube video or send a message, information zooms through cables and through the air as fast as light. Let's see how! ✉️",
+    gif: "https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif",
+    gifAlt: "Animated globe with network connections",
+    sections: [
+      {
+        icon: "📮",
+        heading: "The Internet as a Post Office",
+        text: "When you visit a website, your computer sends a <strong>request</strong> to a computer called a <strong>server</strong> (which stores the website). The server sends the website's data back to you in small pieces called <strong>packets</strong>. They reassemble on your screen instantly!",
+        analogy: "It's like a giant post office: your message is split into letters, each travels a different route, and they all arrive and get put back in order."
+      },
+      {
+        icon: "📍",
+        heading: "IP Addresses & Domain Names",
+        text: "Every device on the internet has a unique address called an <strong>IP address</strong> (e.g., 142.250.184.238). Because numbers are hard to remember, we use domain names like <em>google.com</em>. A special service called <strong>DNS</strong> (Domain Name System) translates names to numbers.",
+        analogy: "DNS is like your phone's contacts list: instead of remembering your friend's phone number, you just search their name!"
+      },
+      {
+        icon: "🔒",
+        heading: "HTTP and HTTPS",
+        text: "Websites use rules called <strong>protocols</strong> to communicate. <strong>HTTPS</strong> (the padlock 🔒 in your browser) means the connection is encrypted and safe. Always look for HTTPS before entering passwords!",
+        analogy: null
+      }
+    ],
+    funFact: "Every second, over <b>5 million</b> emails are sent worldwide! The entire internet carries around <b>5 million terabytes</b> of data. That's roughly the same as 1 billion DVDs! 📀",
+    quiz: [
+      {
+        q: "What are the small pieces that data travels in across the internet called?",
+        options: ["Bytes", "Packets", "Files", "Pixels"],
+        answer: 1
+      },
+      {
+        q: "What does DNS do?",
+        options: ["Deletes Network Software", "Translates domain names to IP addresses", "Makes websites faster", "Stores passwords"],
+        answer: 1
+      },
+      {
+        q: "Why should you look for HTTPS (the padlock) on websites?",
+        options: ["To make the page load faster", "It means the connection is secure and encrypted", "It gives you free Wi-Fi", "Just for decoration"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 5,
+    icon: "🛡️",
+    color: "#80DEEA",
+    title: "Staying Safe Online",
+    intro: "The internet is amazing, but — just like in the real world — it's important to stay safe. Let's learn the most important rules for being a safe, smart, and kind internet citizen! 🦸",
+    gif: "https://media.giphy.com/media/l0HlTy9x8FZo0XO1i/giphy.gif",
+    gifAlt: "Animated shield protecting a computer",
+    sections: [
+      {
+        icon: "🔑",
+        heading: "Super-Strong Passwords",
+        text: "A good password is <strong>long</strong> (at least 12 characters), uses a mix of letters, numbers, and symbols, and is NOT easy to guess. \"password123\" is terrible! 😂 Try a passphrase like <em>\"Purple$Monkey7Dancing!\"</em> — long, random, and easier to remember.",
+        analogy: "Your password is like the key to your house. You wouldn't leave it under the doormat for everyone to find!"
+      },
+      {
+        icon: "🚫",
+        heading: "Strangers Online",
+        text: "Not everyone on the internet is who they say they are. Never share your <strong>real name, school, home address, or phone number</strong> with people you only know online. If someone online makes you uncomfortable, tell a trusted adult immediately.",
+        analogy: null
+      },
+      {
+        icon: "💬",
+        heading: "Think Before You Post",
+        text: "Once something is posted online, it can spread and be hard to delete. Before posting, ask yourself: <em>Would I be okay if my teacher or parents saw this?</em> Also, be kind in comments — words on a screen can still hurt real feelings.",
+        analogy: "Posting online is like writing in permanent marker — it's very hard to erase!"
+      }
+    ],
+    funFact: "The most commonly used password in the world is still <b>\"123456\"</b>. Hackers can crack it in under <b>1 second</b>! Always use a strong, unique password. 🔐",
+    quiz: [
+      {
+        q: "Which of these is the strongest password?",
+        options: ["password", "123456", "myname2010", "Tr0pical$Parrot!42"],
+        answer: 3
+      },
+      {
+        q: "What should you do if a stranger online asks for your home address?",
+        options: ["Give it to them", "Tell a trusted adult immediately", "Send it in a private message", "Ignore and continue chatting"],
+        answer: 1
+      },
+      {
+        q: "What does 'think before you post' mean?",
+        options: ["Type slowly", "Consider if your post is kind and appropriate before sharing", "Make sure you have Wi-Fi", "Always post photos"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 6,
+    icon: "🔁",
+    color: "#FFCC80",
+    title: "Fun with Loops and Conditions",
+    intro: "Two of the most powerful ideas in coding are <strong>loops</strong> (doing something over and over) and <strong>conditions</strong> (making decisions). Once you understand these, you can build almost anything! 🎮",
+    gif: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+    gifAlt: "Animated loop arrows",
+    sections: [
+      {
+        icon: "🔄",
+        heading: "Loops — Do It Again!",
+        text: "A <strong>loop</strong> repeats a set of instructions. Instead of writing 'say hello' 100 times, we write:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.95rem'>for i in range(100):<br>&nbsp;&nbsp;&nbsp;&nbsp;print('Hello!')</code><br>That's it! One loop, 100 hellos.",
+        analogy: "A loop is like a playlist on shuffle — the music keeps playing track after track until you press stop."
+      },
+      {
+        icon: "🌂",
+        heading: "Conditions — Making Decisions",
+        text: "A <strong>condition</strong> checks if something is true or false and does different things based on the answer.<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.95rem'>if raining == True:<br>&nbsp;&nbsp;&nbsp;&nbsp;bring_umbrella()<br>else:<br>&nbsp;&nbsp;&nbsp;&nbsp;wear_sunglasses()</code>",
+        analogy: "Conditions are like a crossroads: if the road is clear, go straight; if there's a red light, stop!"
+      },
+      {
+        icon: "🎮",
+        heading: "Loops + Conditions = Games!",
+        text: "A video game engine basically runs a giant loop. Every fraction of a second it checks conditions: Is the player pressing a key? Did a character hit a wall? Is the score above 100? Then it acts accordingly. Simple loops and conditions are the foundation of every modern game.",
+        analogy: null
+      }
+    ],
+    funFact: "The first computer bug was a real bug 🐛 — in 1947, a moth got trapped inside the Harvard Mark II computer and caused it to malfunction. The team 'debugged' the computer by removing it! 😂",
+    quiz: [
+      {
+        q: "What does a loop do in programming?",
+        options: ["Draws a circle", "Repeats a block of instructions", "Deletes code", "Connects to the internet"],
+        answer: 1
+      },
+      {
+        q: "What does an 'if' condition do?",
+        options: ["Loops forever", "Checks if something is true and acts on it", "Saves a file", "Prints text"],
+        answer: 1
+      },
+      {
+        q: "What is the term for finding and fixing errors in code?",
+        options: ["Looping", "Sorting", "Debugging", "Encrypting"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 7,
+    icon: "🤖",
+    color: "#B39DDB",
+    title: "What is AI?",
+    intro: "AI stands for <strong>Artificial Intelligence</strong> — it means making computers smart enough to do things that normally need human thinking, like recognising faces, translating languages, or playing chess. Let's explore! 🧠✨",
+    gif: "https://media.giphy.com/media/3oKIPwoeGErMmaI43S/giphy.gif",
+    gifAlt: "Animated AI robot thinking",
+    sections: [
+      {
+        icon: "📖",
+        heading: "Learning from Examples",
+        text: "AI learns by looking at thousands (or millions) of examples. If you show an AI 1 million pictures of cats with the label 'cat', it starts to recognise patterns that make something look like a cat. This is called <strong>machine learning</strong>.",
+        analogy: "It's like how you learned to read — no one gave you a 1000-page rule book. You just saw words over and over until patterns clicked!"
+      },
+      {
+        icon: "🗣️",
+        heading: "Natural Language Processing",
+        text: "When you talk to Siri, Alexa, or Google Assistant, they use <strong>NLP (Natural Language Processing)</strong> — AI trained on billions of sentences to understand and generate human language.",
+        analogy: null
+      },
+      {
+        icon: "⚠️",
+        heading: "AI Can Make Mistakes Too!",
+        text: "AI is powerful but not perfect. It can be biased if the examples it learned from were biased. It sometimes 'hallucinates' (makes up information that sounds confident but is wrong). That's why humans are still needed to check AI's work!",
+        analogy: "AI is like a really smart friend who has read every book in the library — but sometimes confidently gives the wrong answer. Always double-check important facts!"
+      }
+    ],
+    funFact: "In 1997, the AI <b>Deep Blue</b> beat chess world champion Garry Kasparov. In 2016, <b>AlphaGo</b> beat the world's best Go player — a game with more possible positions than atoms in the observable universe! 🤯",
+    quiz: [
+      {
+        q: "What does AI stand for?",
+        options: ["Automated Internet", "Artificial Intelligence", "Advanced Input", "Automatic Instruction"],
+        answer: 1
+      },
+      {
+        q: "How does machine learning work?",
+        options: ["By reading a manual", "By learning from thousands of examples", "By guessing randomly", "By copying humans exactly"],
+        answer: 1
+      },
+      {
+        q: "What is one limitation of AI?",
+        options: ["It's always wrong", "It never makes mistakes", "It can be biased or give incorrect information", "It requires no electricity"],
+        answer: 2
+      }
+    ]
+  }
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentChapter = -1;
+let progress = JSON.parse(localStorage.getItem('cska_progress') || '{}');
+let quizPassed = JSON.parse(localStorage.getItem('cska_quiz') || '{}');
+let currentLang = 'en';
+const translationCache = {};
+let confettiAnim = null;
+
+// ============================================================
+//  PROGRESS HELPERS
+// ============================================================
+function isComplete(id) { return !!progress[id]; }
+function isQuizPassed(id) { return !!quizPassed[id]; }
+
+function markComplete(id) {
+  progress[id] = true;
+  localStorage.setItem('cska_progress', JSON.stringify(progress));
+  updateProgressBar();
+  updateNavList();
+  updateHomeGrid();
+  if (Object.keys(progress).length === CHAPTERS.length) {
+    setTimeout(triggerCelebration, 400);
+  }
+}
+
+function updateProgressBar() {
+  const done = Object.keys(progress).length;
+  const pct  = Math.round(done / CHAPTERS.length * 100);
+  document.getElementById('progress-bar-inner').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done} of ${CHAPTERS.length} chapters done`;
+}
+
+// ============================================================
+//  NAV LIST
+// ============================================================
+function updateNavList() {
+  const list = document.getElementById('nav-list');
+  list.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    const div = document.createElement('div');
+    div.className = 'nav-item' + (i === currentChapter ? ' active' : '') + (isComplete(i) ? ' done' : '');
+    div.innerHTML = `<span class="nav-icon">${ch.icon}</span><span>${ch.title}</span><span class="nav-check">✅</span>`;
+    div.onclick = () => showChapter(i);
+    list.appendChild(div);
+  });
+}
+
+function updateHomeGrid() {
+  const grid = document.getElementById('home-grid');
+  grid.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'chapter-card' + (isComplete(i) ? ' done' : '');
+    card.style.borderTopColor = ch.color;
+    card.innerHTML = `
+      <div class="card-num">Chapter ${i + 1}</div>
+      <div class="card-icon">${ch.icon}</div>
+      <h3>${ch.title}</h3>
+      <div class="done-badge">✅</div>
+    `;
+    card.onclick = () => showChapter(i);
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showHome() {
+  currentChapter = -1;
+  document.getElementById('home-screen').style.display = 'block';
+  document.getElementById('chapter-view').style.display = 'none';
+  updateNavList();
+}
+
+function showChapter(index) {
+  currentChapter = index;
+  document.getElementById('home-screen').style.display = 'none';
+  const cv = document.getElementById('chapter-view');
+  cv.style.display = 'block';
+  renderChapter(index);
+  updateNavList();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const prevBtn = document.getElementById('btn-prev');
+  const nextBtn = document.getElementById('btn-next');
+  prevBtn.disabled = index === 0;
+  prevBtn.style.opacity = index === 0 ? '.4' : '1';
+  nextBtn.disabled = index === CHAPTERS.length - 1;
+  nextBtn.style.opacity = index === CHAPTERS.length - 1 ? '.4' : '1';
+}
+
+function goChapter(delta) {
+  const next = currentChapter + delta;
+  if (next >= 0 && next < CHAPTERS.length) showChapter(next);
+}
+
+// ============================================================
+//  RENDER CHAPTER
+// ============================================================
+function renderChapter(index) {
+  const ch = CHAPTERS[index];
+  const content = document.getElementById('chapter-content');
+
+  // Header
+  let html = `
+    <div class="chapter-header" style="border-left-color:${ch.color}">
+      <div class="ch-num">Chapter ${index + 1} of ${CHAPTERS.length}</div>
+      <h2>${ch.icon} ${ch.title}</h2>
+      <p class="ch-intro">${ch.intro}</p>
+      <div class="ch-actions">
+        <button class="btn-read" onclick="readAloud(${index})">🔊 Read Aloud</button>
+        <button class="btn-read" style="background:#80CBC4" onclick="stopRead()">⏹ Stop</button>
+      </div>
+    </div>
+  `;
+
+  // Animation / GIF
+  html += `<div class="lottie-wrap"><img src="${ch.gif}" alt="${ch.gifAlt}" loading="lazy" /></div>`;
+
+  // Sections
+  ch.sections.forEach(sec => {
+    html += `
+      <div class="section-card">
+        <h3>${sec.icon} ${sec.heading}</h3>
+        <p>${sec.text}</p>
+        ${sec.analogy ? `<div class="analogy">${sec.analogy}</div>` : ''}
+      </div>
+    `;
+  });
+
+  // Fun Fact
+  html += `
+    <div class="fun-fact">
+      <h4>🤩 Did You Know?</h4>
+      <p>${ch.funFact}</p>
+    </div>
+  `;
+
+  // Quiz
+  html += buildQuiz(ch, index);
+
+  // Mark Complete button
+  const done = isComplete(index);
+  const qPassed = isQuizPassed(index);
+  html += `
+    <div class="complete-wrap">
+      <button class="btn-complete ${done ? 'done' : ''}" id="complete-btn-${index}"
+        onclick="onMarkComplete(${index})"
+        ${done || !qPassed ? 'disabled' : ''}>
+        ${done ? '✅ Completed!' : '🏁 Mark as Complete'}
+      </button>
+      <div class="complete-hint" id="complete-hint-${index}">
+        ${done ? '🎉 Great job on this chapter!' : (qPassed ? 'You can now mark this chapter complete!' : 'Pass the quiz above to unlock this button!')}
+      </div>
+    </div>
+  `;
+
+  content.innerHTML = html;
+}
+
+// ============================================================
+//  QUIZ
+// ============================================================
+function buildQuiz(ch, chIndex) {
+  let html = `<div class="quiz-card"><h4>📝 Quick Quiz — Test Your Knowledge!</h4>`;
+  ch.quiz.forEach((q, qi) => {
+    html += `<div class="quiz-q" id="qq-${chIndex}-${qi}">
+      <p>Q${qi + 1}: ${q.q}</p>`;
+    q.options.forEach((opt, oi) => {
+      html += `
+        <label class="quiz-option" id="opt-${chIndex}-${qi}-${oi}">
+          <input type="radio" name="q-${chIndex}-${qi}" value="${oi}" /> ${opt}
+        </label>`;
+    });
+    html += `<div class="quiz-feedback" id="qf-${chIndex}-${qi}"></div>`;
+    html += `</div>`;
+  });
+  html += `<button class="btn-check" id="quiz-check-${chIndex}" onclick="checkQuiz(${chIndex})">Check Answers ✔</button>`;
+  html += `</div>`;
+  return html;
+}
+
+function checkQuiz(chIndex) {
+  const ch = CHAPTERS[chIndex];
+  let allCorrect = true;
+  ch.quiz.forEach((q, qi) => {
+    const selected = document.querySelector(`input[name="q-${chIndex}-${qi}"]:checked`);
+    const fb = document.getElementById(`qf-${chIndex}-${qi}`);
+    if (!selected) { allCorrect = false; return; }
+    const val = parseInt(selected.value);
+    // Clear previous styling
+    q.options.forEach((_, oi) => {
+      const lbl = document.getElementById(`opt-${chIndex}-${qi}-${oi}`);
+      lbl.classList.remove('correct', 'wrong');
+    });
+    if (val === q.answer) {
+      document.getElementById(`opt-${chIndex}-${qi}-${val}`).classList.add('correct');
+      fb.textContent = '✅ Correct!'; fb.className = 'quiz-feedback ok';
+    } else {
+      document.getElementById(`opt-${chIndex}-${qi}-${val}`).classList.add('wrong');
+      document.getElementById(`opt-${chIndex}-${qi}-${q.answer}`).classList.add('correct');
+      fb.textContent = '❌ Not quite! The correct answer is highlighted.'; fb.className = 'quiz-feedback err';
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect) {
+    quizPassed[chIndex] = true;
+    localStorage.setItem('cska_quiz', JSON.stringify(quizPassed));
+    const btn = document.getElementById(`complete-btn-${chIndex}`);
+    const hint = document.getElementById(`complete-hint-${chIndex}`);
+    if (!isComplete(chIndex)) {
+      btn.disabled = false;
+      hint.textContent = '🎉 All correct! You can now mark this chapter complete!';
+    }
+    document.getElementById(`quiz-check-${chIndex}`).textContent = '🎊 Perfect Score!';
+    document.getElementById(`quiz-check-${chIndex}`).disabled = true;
+  }
+}
+
+function onMarkComplete(index) {
+  markComplete(index);
+  const btn = document.getElementById(`complete-btn-${index}`);
+  const hint = document.getElementById(`complete-hint-${index}`);
+  btn.textContent = '✅ Completed!';
+  btn.classList.add('done');
+  btn.disabled = true;
+  hint.textContent = '🎉 Great job on this chapter!';
+}
+
+// ============================================================
+//  READ ALOUD
+// ============================================================
+function readAloud(index) {
+  stopRead();
+  const ch = CHAPTERS[index];
+  let text = ch.title + '. ' + ch.intro + ' ';
+  ch.sections.forEach(s => { text += s.heading + '. ' + s.text.replace(/<[^>]+>/g, '') + '. '; });
+  text += 'Did you know? ' + ch.funFact.replace(/<[^>]+>/g, '');
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = currentLang === 'hi' ? 'hi-IN' : currentLang === 'ur' ? 'ur-PK' : 'en-US';
+  utt.rate = 0.9;
+  window.speechSynthesis.speak(utt);
+}
+
+function stopRead() {
+  window.speechSynthesis.cancel();
+}
+
+// ============================================================
+//  CONFETTI + CELEBRATION
+// ============================================================
+function triggerCelebration() {
+  runConfetti();
+  document.getElementById('cert-overlay').classList.add('show');
+}
+
+function runConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const pieces = [];
+  const colors = ['#4FC3F7','#FFD54F','#81C784','#CE93D8','#F48FB1','#FF8A65'];
+  for (let i = 0; i < 180; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      r: Math.random() * 8 + 4,
+      d: Math.random() * 3 + 1,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10 - 10,
+      tiltAngle: 0,
+      tiltSpeed: Math.random() * .1 + .05
+    });
+  }
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.beginPath();
+      ctx.lineWidth = p.r / 2;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+      ctx.stroke();
+
+      p.y += (Math.cos(frame / 15) + p.d);
+      p.tiltAngle += p.tiltSpeed;
+      p.tilt = Math.sin(p.tiltAngle) * 12;
+      if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+    });
+    frame++;
+    if (frame < 300) { confettiAnim = requestAnimationFrame(draw); }
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  }
+  draw();
+}
+
+// ============================================================
+//  CERTIFICATE
+// ============================================================
+const nameInput = document.getElementById('cert-name-input');
+const nameDisplay = document.getElementById('cert-name-display');
+nameInput.addEventListener('input', () => { nameDisplay.textContent = nameInput.value; });
+
+function printCert() {
+  if (!nameInput.value.trim()) { nameInput.focus(); nameInput.style.borderColor = 'red'; return; }
+  window.print();
+}
+
+function closeCert() {
+  document.getElementById('cert-overlay').classList.remove('show');
+  if (confettiAnim) { cancelAnimationFrame(confettiAnim); }
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ============================================================
+//  TRANSLATION  (LibreTranslate public demo)
+// ============================================================
+const LIBRE_URL = 'https://libretranslate.com/translate';
+
+async function translateText(text, target) {
+  const key = target + '::' + text;
+  if (translationCache[key]) return translationCache[key];
+  const resp = await fetch(LIBRE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q: text, source: 'en', target, format: 'text' })
+  });
+  if (!resp.ok) return text; // fallback
+  const data = await resp.json();
+  const result = data.translatedText || text;
+  translationCache[key] = result;
+  return result;
+}
+
+async function applyTranslation(lang) {
+  if (lang === 'en') {
+    location.reload(); // simplest way to restore English
+    return;
+  }
+  const spinner = document.getElementById('translate-spinner');
+  spinner.classList.add('show');
+  const nodes = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const p = node.parentElement;
+      if (!p || ['SCRIPT','STYLE','OPTION','INPUT','CODE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+      if (node.textContent.trim() === '') return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  // batch translate unique strings
+  const unique = [...new Set(nodes.map(n => n.textContent.trim()))];
+  await Promise.all(unique.map(t => translateText(t, lang)));
+
+  for (const node of nodes) {
+    const orig = node.textContent.trim();
+    const key = lang + '::' + orig;
+    if (translationCache[key]) node.textContent = translationCache[key];
+  }
+  spinner.classList.remove('show');
+}
+
+document.getElementById('lang-select').addEventListener('change', async e => {
+  const lang = e.target.value;
+  currentLang = lang;
+  const html = document.documentElement;
+  if (lang === 'ur') { html.setAttribute('dir', 'rtl'); html.setAttribute('lang', 'ur'); }
+  else { html.setAttribute('dir', 'ltr'); html.setAttribute('lang', lang); }
+  await applyTranslation(lang);
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+updateProgressBar();
+updateNavList();
+updateHomeGrid();
+</script>
+</body>
+</html>
