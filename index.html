@@ -337,6 +337,25 @@
     }
     .nav-prev-next button:hover { border-color: var(--sky); background: #EBF6FF; }
 
+    /* ===== LEVEL UI ===== */
+    .level-section { margin-bottom: 32px; }
+    .level-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 0 4px; }
+    .level-header h3 { font-size: 1.2rem; font-weight: 800; }
+    .level-badge { padding: 4px 14px; border-radius: 20px; font-size: .82rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; flex-shrink: 0; }
+    .l1-badge { background: #E3F2FD; color: #1565C0; }
+    .l2-badge { background: #F3E5F5; color: #7B1FA2; }
+    .level-status { font-size: .88rem; font-weight: 700; color: #43A047; margin-left: auto; }
+    .level-lock-banner { background: #FFF8E1; border: 2px dashed #FFD54F; border-radius: var(--radius); padding: 18px 22px; text-align: center; margin-bottom: 16px; font-size: .98rem; font-weight: 700; color: #795548; }
+    .chapter-card.locked { opacity: .5; cursor: not-allowed; filter: grayscale(.5); }
+    .chapter-card.locked:hover { transform: none; box-shadow: var(--shadow); }
+    .level-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .level-tab { flex: 1; padding: 8px 6px; border-radius: 10px; border: 2px solid #e0e0e0; background: #fff; font-family: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; text-align: center; transition: all .2s; }
+    .level-tab.active { background: linear-gradient(135deg, #4FC3F7, #CE93D8); color: #fff; border-color: transparent; }
+    .level-tab:disabled { opacity: .4; cursor: not-allowed; }
+    #unlock-toast { display: none; position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #43A047, #1B5E20); color: #fff; padding: 14px 28px; border-radius: 30px; font-weight: 800; font-size: 1rem; z-index: 300; box-shadow: 0 6px 24px rgba(0,0,0,.2); white-space: nowrap; }
+    #unlock-toast.show { display: block; animation: slideUp .4s ease; }
+    @keyframes slideUp { from{transform:translateX(-50%) translateY(40px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+
     /* RTL support */
     html[dir=rtl] #sidebar { border-right: none; border-left: 2px solid #e3eef7; }
     html[dir=rtl] .chapter-header { border-left: none; border-right: 6px solid var(--sky); }
@@ -380,6 +399,10 @@
       <div id="progress-text">0 of 8 chapters done</div>
       <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
     </div>
+    <div class="level-tabs">
+      <button class="level-tab active" id="tab-0" onclick="setCurrentLevel(0)">🌱 Level 1</button>
+      <button class="level-tab" id="tab-1" onclick="setCurrentLevel(1)" disabled>🚀 Level 2</button>
+    </div>
     <h2>Chapters</h2>
     <div id="nav-list"></div>
   </nav>
@@ -391,10 +414,28 @@
       <div class="home-hero">
         <span class="mascot">🤖</span>
         <h2>Welcome to CS Kids Academy!</h2>
-        <p>Learn how computers work, what algorithms are, how the internet works, and much more — all in a fun way! 🎉</p>
+        <p>Two levels of fun learning — start with the basics, then level up to build real things! 🚀</p>
         <button class="btn-start" onclick="showChapter(0)">Start Learning → Chapter 1</button>
       </div>
-      <div class="chapters-grid" id="home-grid"></div>
+      <!-- Level 1 -->
+      <div class="level-section">
+        <div class="level-header">
+          <span class="level-badge l1-badge">Level 1</span>
+          <h3>Computer Science Basics</h3>
+          <span class="level-status" id="l1-status"></span>
+        </div>
+        <div class="chapters-grid" id="home-grid-0"></div>
+      </div>
+      <!-- Level 2 -->
+      <div class="level-section">
+        <div class="level-header">
+          <span class="level-badge l2-badge">Level 2</span>
+          <h3>Code &amp; Create</h3>
+          <span class="level-status" id="l2-status"></span>
+        </div>
+        <div id="l2-lock-banner" class="level-lock-banner" style="display:none">🔒 Complete all 8 Level 1 chapters to unlock Level 2!</div>
+        <div class="chapters-grid" id="home-grid-1"></div>
+      </div>
     </div>
 
     <!-- Chapter view -->
@@ -417,11 +458,14 @@
     <p class="cert-name-line">This certificate is proudly awarded to</p>
     <input id="cert-name-input" type="text" placeholder="Enter your name here…" />
     <span class="cert-name" id="cert-name-display"></span>
-    <p class="cert-desc">For successfully completing all 8 chapters of<br><strong>CS Kids Academy</strong> and becoming a Computer Science Explorer! 🚀</p>
+    <p class="cert-desc" id="cert-desc">For successfully completing all 8 chapters of<br><strong>CS Kids Academy</strong> and becoming a Computer Science Explorer! 🚀</p>
     <button id="cert-print-btn" onclick="printCert()">🖨️ Print Certificate</button>
     <button id="cert-close-btn" onclick="closeCert()">Close</button>
   </div>
 </div>
+
+<!-- Unlock toast -->
+<div id="unlock-toast"></div>
 
 <!-- Confetti canvas -->
 <canvas id="confetti-canvas"></canvas>
@@ -819,69 +863,329 @@ And here's a loop that counts to 5:<br><br>
 ];
 
 // ============================================================
+//  LEVEL 2 CHAPTERS
+// ============================================================
+const CHAPTERS_L2 = [
+  {
+    id: 0, icon: "🌐", color: "#4DB6AC",
+    title: "Build Your First Webpage",
+    intro: "You've learned how computers think — now it's time to create something real! Every website you've ever visited was built with HTML. Let's write your first webpage from scratch! ✍️",
+    gif: "https://media.giphy.com/media/du3J3cXyzhj75IOgvA/giphy.gif",
+    gifAlt: "Animated code editor typing HTML",
+    sections: [
+      { icon: "🦴", heading: "HTML – The Skeleton of a Webpage",
+        text: "<strong>HTML (HyperText Markup Language)</strong> tells the browser what's on a page. Every piece of content is wrapped in <strong>tags</strong>:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>&lt;h1&gt;Hello World!&lt;/h1&gt;<br>&lt;p&gt;This is a paragraph.&lt;/p&gt;</code>",
+        analogy: "HTML tags are like labels on boxes. The label tells everyone what's inside — a heading, a paragraph, or a picture?" },
+      { icon: "🏗️", heading: "Every Page Has the Same Structure",
+        text: "Every HTML page starts with the same skeleton:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&nbsp;&nbsp;&lt;head&gt;&lt;title&gt;My Page&lt;/title&gt;&lt;/head&gt;<br>&nbsp;&nbsp;&lt;body&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;h1&gt;Welcome!&lt;/h1&gt;<br>&nbsp;&nbsp;&lt;/body&gt;<br>&lt;/html&gt;</code><br>The <code>&lt;head&gt;</code> holds invisible settings. The <code>&lt;body&gt;</code> holds what the user sees.",
+        analogy: null },
+      { icon: "🔗", heading: "Links and Images",
+        text: "Two super-useful tags:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>&lt;a href='https://example.com'&gt;Click me!&lt;/a&gt;<br>&lt;img src='cat.jpg' alt='A fluffy cat' /&gt;</code><br>The <strong>href</strong> is the URL; <strong>alt</strong> describes the image for screen readers.",
+        analogy: "A link is like a door — it takes you somewhere when you open (click) it!" }
+    ],
+    funFact: "The world's first website went live on <b>August 6, 1991</b>, created by Tim Berners-Lee. It is still online today at <em>info.cern.ch</em> and was built entirely with HTML. 🌍",
+    quiz: [
+      { q: "What does HTML stand for?", options: ["HyperText Markup Language","Home Tool Making Language","High Tech Modern Language","HyperText Making Links"], answer: 0 },
+      { q: "Which HTML tag creates a large heading?", options: ["&lt;p&gt;","&lt;link&gt;","&lt;h1&gt;","&lt;bold&gt;"], answer: 2 },
+      { q: "What does the 'href' attribute do in a link tag?", options: ["Changes font size","Sets the destination URL","Makes text bold","Adds a picture"], answer: 1 }
+    ]
+  },
+  {
+    id: 1, icon: "🎨", color: "#FF8A65",
+    title: "Style it with CSS",
+    intro: "HTML gives a webpage its structure, but it looks pretty plain on its own. <strong>CSS</strong> is what makes websites colourful, beautiful, and fun to look at! 🏠✨",
+    gif: "https://media.giphy.com/media/xT9DPpf0zTqRASyzlm/giphy.gif",
+    gifAlt: "Animated colourful website being styled",
+    sections: [
+      { icon: "🖌️", heading: "What is CSS?",
+        text: "<strong>CSS (Cascading Style Sheets)</strong> lets you style HTML elements. You select an element and set properties:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>h1 { color: blue; font-size: 36px; }<br>p  { background: yellow; }</code>",
+        analogy: "CSS is like a stylist: the HTML is the person, and CSS decides what clothes (colours, fonts, sizes) they wear!" },
+      { icon: "🌈", heading: "Colours, Fonts & Sizes",
+        text: "You can use colour names like <code>red</code>, or precise hex codes like <code>#FF5733</code>. Fonts can come from Google Fonts. Sizes can be in pixels (<code>px</code>), percentages (<code>%</code>), or relative units (<code>em</code>, <code>rem</code>).",
+        analogy: null },
+      { icon: "📦", heading: "The Box Model",
+        text: "In CSS every element is a box with four layers:<br><ul><li><strong>Content</strong> — the actual text or image</li><li><strong>Padding</strong> — space inside around the content</li><li><strong>Border</strong> — the line around padding</li><li><strong>Margin</strong> — space outside, pushing other elements away</li></ul>",
+        analogy: "Think of a framed photo: photo = content, mat = padding, frame = border, gap to wall = margin." }
+    ],
+    funFact: "CSS was invented by <b>Håkon Wium Lie</b> in 1996. Before CSS, designers had to write <code>color='red'</code> directly on every single HTML element — every time! 😱",
+    quiz: [
+      { q: "What does CSS stand for?", options: ["Cascading Style Sheets","Computer Styling Software","Creative Screen Sheets","Colour & Style System"], answer: 0 },
+      { q: "Which CSS property changes text colour?", options: ["font-size","background","color","margin"], answer: 2 },
+      { q: "In the box model, what is 'padding'?", options: ["Space outside the element","The border thickness","Space inside the element around the content","The element's width"], answer: 2 }
+    ]
+  },
+  {
+    id: 2, icon: "✨", color: "#FFD54F",
+    title: "JavaScript – Make Things Move",
+    intro: "HTML is the structure, CSS is the style… and <strong>JavaScript</strong> is what makes a webpage <em>do things</em>. Buttons that respond, scores that update, games that play — it's all JavaScript! 🕹️",
+    gif: "https://media.giphy.com/media/H7x1H0veAJlo4/giphy.gif",
+    gifAlt: "Animated JavaScript code running",
+    sections: [
+      { icon: "📦", heading: "Variables – Storing Information",
+        text: "A <strong>variable</strong> is a labelled box that stores a value:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>let score = 0;<br>const playerName = 'Alice';<br>score = score + 10; // score is now 10</code>",
+        analogy: "Variables are like named jars in a kitchen. One jar says 'sugar', another says 'score'. You can look inside or change what's in them." },
+      { icon: "🖱️", heading: "Events – Reacting to Clicks",
+        text: "JavaScript listens for user actions called <strong>events</strong>:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>document.getElementById('myBtn')<br>&nbsp;&nbsp;.addEventListener('click', function() {<br>&nbsp;&nbsp;&nbsp;&nbsp;alert('You clicked me! 🎉');<br>&nbsp;&nbsp;});</code>",
+        analogy: null },
+      { icon: "🔧", heading: "Changing the Page with the DOM",
+        text: "The <strong>DOM (Document Object Model)</strong> is JavaScript's view of your HTML. You can grab any element and change it:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>let h = document.getElementById('title');<br>h.textContent = 'Hello from JS!';<br>h.style.color = 'purple';</code>",
+        analogy: "The DOM is like a TV remote for your webpage. Want to change the channel (content)? Just press a button (run JS)!" }
+    ],
+    funFact: "JavaScript was created in just <b>10 days</b> by Brendan Eich in 1995. It was originally named 'LiveScript' but was renamed JavaScript to ride the popularity of Java — even though the two languages are completely different! 😄",
+    quiz: [
+      { q: "What keyword creates a variable in modern JavaScript?", options: ["var only","make","let or const","def"], answer: 2 },
+      { q: "What is an 'event' in JavaScript?", options: ["A type of variable","A user action the browser can detect (like a click)","A loop","An error message"], answer: 1 },
+      { q: "What does DOM stand for?", options: ["Document Object Model","Data Output Module","Display Object Map","Dynamic Open Media"], answer: 0 }
+    ]
+  },
+  {
+    id: 3, icon: "📚", color: "#CE93D8",
+    title: "Lists, Arrays & Data",
+    intro: "In real programs, you rarely deal with just one value — you deal with <em>collections</em>. A playlist of songs, a list of students, a set of scores. Let's learn how code organises groups of data! 🗂️",
+    gif: "https://media.giphy.com/media/3oKIPwoeGErMmaI43S/giphy.gif",
+    gifAlt: "Animated list items appearing",
+    sections: [
+      { icon: "📋", heading: "Arrays – An Ordered List",
+        text: "An <strong>array</strong> stores multiple values in order:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>let fruits = ['apple','banana','mango'];<br>console.log(fruits[0]); // 'apple'<br>console.log(fruits.length); // 3</code><br>Positions start at <strong>0</strong>, not 1!",
+        analogy: "An array is like a row of numbered lockers. Locker 0 holds the first item, locker 1 the second, and so on." },
+      { icon: "🗂️", heading: "Objects – Named Data",
+        text: "An <strong>object</strong> stores data as <em>key: value</em> pairs:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>let player = {<br>&nbsp;&nbsp;name: 'Alice',<br>&nbsp;&nbsp;score: 120,<br>&nbsp;&nbsp;level: 3<br>};<br>console.log(player.name); // 'Alice'</code>",
+        analogy: "An object is like a contact card: it has a 'name' field, a 'phone' field — each labelled so you know what it contains." },
+      { icon: "🔄", heading: "Looping Through Lists",
+        text: "Loops and arrays work perfectly together:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>let colours = ['red','green','blue'];<br>colours.forEach(function(c) {<br>&nbsp;&nbsp;console.log('I like ' + c);<br>});</code>",
+        analogy: null }
+    ],
+    funFact: "Arrays in most languages start at index <b>0</b>, not 1. This has caused famous arguments between programmers for decades! Some languages (MATLAB, Lua) start at 1 just to be different. 🤓",
+    quiz: [
+      { q: "What does an array store?", options: ["A single number","An ordered collection of values","Only text","A webpage"], answer: 1 },
+      { q: "What index holds the FIRST item of an array?", options: ["1","0","-1","First"], answer: 1 },
+      { q: "What is a JavaScript object?", options: ["A physical thing","A collection of key-value pairs","A type of loop","An HTML element"], answer: 1 }
+    ]
+  },
+  {
+    id: 4, icon: "🔧", color: "#80CBC4",
+    title: "How Apps Are Built",
+    intro: "Ever wondered how TikTok, WhatsApp, or Roblox actually work? They're built from two halves talking to each other: the <strong>frontend</strong> (what you see) and the <strong>backend</strong> (what happens behind the scenes). 🏗️",
+    gif: "https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif",
+    gifAlt: "Animated server and client communicating",
+    sections: [
+      { icon: "🖥️", heading: "Frontend – What You See",
+        text: "The <strong>frontend</strong> is everything visible: buttons, text, images, animations. It's built with HTML, CSS, and JavaScript. Frontend developers make sure apps look great and are easy to use.",
+        analogy: "The frontend is the dining room of a restaurant — tables, menus, nice lighting. It's all for the customer's experience." },
+      { icon: "⚙️", heading: "Backend – The Engine Room",
+        text: "The <strong>backend</strong> is invisible: databases, servers, business logic. When you log in, the backend checks your password. When you post a photo, the backend saves it. Popular languages: Python, Node.js, Java.",
+        analogy: "The backend is the kitchen of the restaurant — the cooking happens there, but guests don't see it." },
+      { icon: "🍽️", heading: "APIs – The Waiter Between Them",
+        text: "An <strong>API (Application Programming Interface)</strong> is how the frontend and backend communicate. The frontend sends a request ('Get me the weather') and the backend responds with data. APIs also connect completely separate services.",
+        analogy: "An API is the waiter who takes your order to the kitchen and brings the food back. You don't cook it yourself!" }
+    ],
+    funFact: "The term <b>API</b> was first used in the 1960s! Today, it's estimated over <b>2 billion API calls</b> happen every day just on Amazon Web Services alone. 🤯",
+    quiz: [
+      { q: "What is the 'frontend' of an app?", options: ["The database","The server code","The visible UI that users interact with","The API"], answer: 2 },
+      { q: "What does a backend server typically do?", options: ["Display buttons","Handle data, logic, and databases invisibly","Design colour themes","Play sounds"], answer: 1 },
+      { q: "What is an API?", options: ["A type of font","A way for programs to communicate with each other","A database language","A CSS property"], answer: 1 }
+    ]
+  },
+  {
+    id: 5, icon: "🗄️", color: "#81C784",
+    title: "Databases: Data That Lasts",
+    intro: "Every time you create an account, post a photo, or buy something online, that data gets stored in a <strong>database</strong>. Databases are super-organised, super-fast filing systems for computers. 📁",
+    gif: "https://media.giphy.com/media/l46CyJmS9KUbokzsI/giphy.gif",
+    gifAlt: "Animated database storing records",
+    sections: [
+      { icon: "📁", heading: "What is a Database?",
+        text: "A <strong>database</strong> is an organised collection of data stored on a computer, designed so you can find, add, update, or delete information quickly. The most common type is a <strong>relational database</strong> — data stored in tables like spreadsheets.",
+        analogy: "A database is like a library: thousands of books (data), organised by topic (tables), with a catalogue system (queries) to find anything in seconds." },
+      { icon: "📊", heading: "Tables, Rows and Columns",
+        text: "Data lives in <strong>tables</strong>. Each table has <strong>columns</strong> (types: name, age, email) and <strong>rows</strong> (one record per person):<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.88rem'>| ID | Name  | Age | City     |<br>|----|-------|-----|----------| <br>|  1 | Alice | 10  | London   |<br>|  2 | Bob   | 11  | New York |</code>",
+        analogy: null },
+      { icon: "🔍", heading: "SQL – Asking the Database Questions",
+        text: "<strong>SQL (Structured Query Language)</strong> reads almost like English:<br><br><code style='display:block;background:#f4f4f4;padding:12px;border-radius:8px;font-size:.9rem'>SELECT name, age FROM students<br>WHERE city = 'London';</code><br>This means: <em>'Give me the names and ages of all students from London.'</em>",
+        analogy: "SQL is like asking a librarian: 'Show me all mystery books written after 2010, sorted by author.' The librarian (database) fetches exactly what you asked for." }
+    ],
+    funFact: "The most popular database in the world is <b>MySQL</b> — and it's completely free and open source! It powers Facebook, Twitter, and Wikipedia. Your school's records are probably in a database right now! 🏫",
+    quiz: [
+      { q: "What is a database?", options: ["A programming language","An organised system for storing and retrieving data","A web browser","A type of CPU"], answer: 1 },
+      { q: "In a database table, what is a 'row'?", options: ["A column of settings","A single record (e.g. one student's data)","The table title","A SQL command"], answer: 1 },
+      { q: "What does SELECT do in SQL?", options: ["Deletes data","Updates a row","Retrieves data from a table","Creates a new table"], answer: 2 }
+    ]
+  },
+  {
+    id: 6, icon: "🔐", color: "#F48FB1",
+    title: "Cybersecurity Deep Dive",
+    intro: "In Level 1 we learned basic online safety. Now let's go deeper — ciphers, encryption, and the people who ethically break into systems to make them safer! 🕵️",
+    gif: "https://media.giphy.com/media/3o7buirYcmV5nSwIRW/giphy.gif",
+    gifAlt: "Animated lock and encryption code",
+    sections: [
+      { icon: "🔑", heading: "Encryption – Scrambling Messages",
+        text: "Encryption transforms readable data (<strong>plaintext</strong>) into scrambled data (<strong>ciphertext</strong>) using a <strong>key</strong>. Only someone with the key can unscramble it.<br><br>The simplest example: the <strong>Caesar Cipher</strong> shifts every letter by 3. 'HELLO' → 'KHOOR'. Modern encryption is billions of times more complex — it would take longer than the age of the universe to crack!",
+        analogy: "Encryption is like a combination lock on a diary. Without the code, the contents stay private — even if someone steals the diary." },
+      { icon: "🤠", heading: "White Hat vs Black Hat Hackers",
+        text: "<strong>Black hat hackers</strong> break into systems illegally to steal data. <strong>White hat (ethical) hackers</strong> are the good guys — companies <em>hire</em> them to find weaknesses before criminals do. This is called <strong>penetration testing</strong>.",
+        analogy: "It's like hiring a locksmith to pick your locks — so you know which ones to replace before a burglar gets there!" },
+      { icon: "🛡️", heading: "How Developers Stay Secure",
+        text: "Good developers build security in from the start:<br><ul><li>Always use <strong>HTTPS</strong></li><li>Never store passwords in plain text (use hashing!)</li><li>Validate all user input</li><li>Keep software updated</li><li>Use bug bounty programs</li></ul>",
+        analogy: null }
+    ],
+    funFact: "During WWII, mathematician <b>Alan Turing</b> cracked the German Enigma cipher machine. Historians estimate this shortened the war by <b>2–4 years</b> and saved millions of lives. 🏆",
+    quiz: [
+      { q: "What is encryption?", options: ["Deleting data","Transforming data into a scrambled unreadable form","Making a site faster","Compressing files"], answer: 1 },
+      { q: "What is a 'white hat' (ethical) hacker?", options: ["A criminal hacker","Someone paid to find security weaknesses legally","A type of antivirus","A government spy"], answer: 1 },
+      { q: "Which is a good security practice for developers?", options: ["Store passwords as plain text","Skip input validation","Hash passwords and use HTTPS","Avoid updating software"], answer: 2 }
+    ]
+  },
+  {
+    id: 7, icon: "🚀", color: "#B39DDB",
+    title: "Build Your First Mini-Project",
+    intro: "You've made it to the final chapter of Level 2! 🎉 Real developers don't just code — they <strong>plan, design, build, test,</strong> and <strong>improve</strong>. Let's walk through building your very own mini-project! 🛠️",
+    gif: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+    gifAlt: "Animated rocket launch project build",
+    sections: [
+      { icon: "📝", heading: "Step 1 – Plan It",
+        text: "Before writing a single line of code, answer: <em>What does the project do? Who is it for? What are the must-have features?</em><br><br>Write <strong>user stories</strong>:<br><ul><li>As a student, I want to answer quiz questions to test my knowledge</li><li>As a user, I want to see my score at the end</li></ul>",
+        analogy: "Planning is like drawing a treasure map before a hunt. Jumping in without a plan means getting lost in the jungle!" },
+      { icon: "🔨", heading: "Step 2 – Build an MVP",
+        text: "An <strong>MVP (Minimum Viable Product)</strong> is the simplest version of your idea that actually works. Start small:<br><ol style='margin-left:18px;line-height:2'><li>Show one quiz question</li><li>Let the user click an answer</li><li>Show if it's correct</li><li>Move to the next question</li><li>Show final score</li></ol>A working 5-feature quiz beats a broken 50-feature one every time!",
+        analogy: null },
+      { icon: "🧪", heading: "Step 3 – Test and Improve",
+        text: "Once it works, ask someone else to try it. <em>Watch them</em> — don't explain it. Their confusion shows where to improve. Keep a <strong>bug list</strong>, fix the most important issues first, then add new features. This cycle — <strong>build → test → improve → repeat</strong> — is how all great software is made.",
+        analogy: "Testing is like tasting your cooking before serving guests. Better to know it needs salt now!" }
+    ],
+    funFact: "The first video game ever made was <b>Tennis for Two</b> (1958), built on an oscilloscope by physicist William Higinbotham. It had no score, no levels, and lasted 5 minutes. Games have come a long way! 🎮",
+    quiz: [
+      { q: "What does MVP stand for in software development?", options: ["Most Valuable Player","Minimum Viable Product","Maximum Version Program","Main Visual Page"], answer: 1 },
+      { q: "What is the FIRST step in building any project?", options: ["Writing all the code","Planning and defining what it should do","Testing with users","Deploying to the internet"], answer: 1 },
+      { q: "Why should you test with real users?", options: ["To show off your work","To see how they actually use it and find issues you missed","It's required by law","Testing isn't needed for small projects"], answer: 1 }
+    ]
+  }
+];
+
+const ALL_LEVELS = [CHAPTERS, CHAPTERS_L2];
+
+// ============================================================
 //  STATE
 // ============================================================
+// Migrate old single-level progress to new level-keyed format
+(function migrateProgress() {
+  const old = localStorage.getItem('cska_progress');
+  if (old && !localStorage.getItem('cska_progress_0')) localStorage.setItem('cska_progress_0', old);
+  const oldQ = localStorage.getItem('cska_quiz');
+  if (oldQ && !localStorage.getItem('cska_quiz_0')) localStorage.setItem('cska_quiz_0', oldQ);
+})();
+
 let currentChapter = -1;
-let progress = JSON.parse(localStorage.getItem('cska_progress') || '{}');
-let quizPassed = JSON.parse(localStorage.getItem('cska_quiz') || '{}');
+let currentLevel   = 0;
+const PROGRESS    = [
+  JSON.parse(localStorage.getItem('cska_progress_0') || '{}'),
+  JSON.parse(localStorage.getItem('cska_progress_1') || '{}')
+];
+const QUIZ_PASSED = [
+  JSON.parse(localStorage.getItem('cska_quiz_0') || '{}'),
+  JSON.parse(localStorage.getItem('cska_quiz_1') || '{}')
+];
 let currentLang = 'en';
 let confettiAnim = null;
 
 // ============================================================
 //  PROGRESS HELPERS
 // ============================================================
-function isComplete(id) { return !!progress[id]; }
-function isQuizPassed(id) { return !!quizPassed[id]; }
+function isComplete(id, lv)   { lv = (lv !== undefined) ? lv : currentLevel; return !!PROGRESS[lv][id]; }
+function isQuizPassed(id, lv) { lv = (lv !== undefined) ? lv : currentLevel; return !!QUIZ_PASSED[lv][id]; }
+function isLevelComplete(lv)  { return ALL_LEVELS[lv].every((_, i) => isComplete(i, lv)); }
 
-function markComplete(id) {
-  progress[id] = true;
-  localStorage.setItem('cska_progress', JSON.stringify(progress));
+function markComplete(id, lv) {
+  lv = (lv !== undefined) ? lv : currentLevel;
+  PROGRESS[lv][id] = true;
+  localStorage.setItem('cska_progress_' + lv, JSON.stringify(PROGRESS[lv]));
   updateProgressBar();
   updateNavList();
   updateHomeGrid();
-  if (Object.keys(progress).length === CHAPTERS.length) {
-    setTimeout(triggerCelebration, 400);
-  }
+  if (lv === 0 && isLevelComplete(0)) { setTimeout(() => triggerCelebration(0), 400); }
+  if (lv === 1 && isLevelComplete(1)) { setTimeout(() => triggerCelebration(1), 400); }
+}
+
+function showUnlockToast(msg) {
+  const t = document.getElementById('unlock-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 5000);
 }
 
 function updateProgressBar() {
-  const done = Object.keys(progress).length;
-  const pct  = Math.round(done / CHAPTERS.length * 100);
+  const chs  = ALL_LEVELS[currentLevel];
+  const done = chs.filter((_, i) => isComplete(i, currentLevel)).length;
+  const pct  = Math.round(done / chs.length * 100);
   document.getElementById('progress-bar-inner').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = `${done} of ${CHAPTERS.length} chapters done`;
+  document.getElementById('progress-text').textContent = `Level ${currentLevel + 1}: ${done} of ${chs.length} done`;
 }
 
 // ============================================================
 //  NAV LIST
 // ============================================================
+function setCurrentLevel(lv) {
+  if (lv === 1 && !isLevelComplete(0)) {
+    showUnlockToast('🔒 Complete all Level 1 chapters first to unlock Level 2!');
+    return;
+  }
+  currentLevel = lv;
+  currentChapter = -1;
+  document.getElementById('tab-0').classList.toggle('active', lv === 0);
+  document.getElementById('tab-1').classList.toggle('active', lv === 1);
+  updateProgressBar();
+  updateNavList();
+}
+
 function updateNavList() {
   const list = document.getElementById('nav-list');
   list.innerHTML = '';
-  CHAPTERS.forEach((ch, i) => {
+  const chs = ALL_LEVELS[currentLevel];
+  chs.forEach((ch, i) => {
     const div = document.createElement('div');
-    div.className = 'nav-item' + (i === currentChapter ? ' active' : '') + (isComplete(i) ? ' done' : '');
+    div.className = 'nav-item' + (i === currentChapter ? ' active' : '') + (isComplete(i, currentLevel) ? ' done' : '');
     div.innerHTML = `<span class="nav-icon">${ch.icon}</span><span>${ch.title}</span><span class="nav-check">✅</span>`;
     div.onclick = () => showChapter(i);
     list.appendChild(div);
   });
+  const tab1 = document.getElementById('tab-1');
+  tab1.disabled = !isLevelComplete(0);
+  tab1.title = isLevelComplete(0) ? '' : 'Complete Level 1 to unlock';
 }
 
 function updateHomeGrid() {
-  const grid = document.getElementById('home-grid');
-  grid.innerHTML = '';
+  // Level 1 grid
+  const g0 = document.getElementById('home-grid-0');
+  g0.innerHTML = '';
   CHAPTERS.forEach((ch, i) => {
     const card = document.createElement('div');
-    card.className = 'chapter-card' + (isComplete(i) ? ' done' : '');
+    card.className = 'chapter-card' + (isComplete(i, 0) ? ' done' : '');
     card.style.borderTopColor = ch.color;
-    card.innerHTML = `
-      <div class="card-num">Chapter ${i + 1}</div>
-      <div class="card-icon">${ch.icon}</div>
-      <h3>${ch.title}</h3>
-      <div class="done-badge">✅</div>
-    `;
-    card.onclick = () => showChapter(i);
-    grid.appendChild(card);
+    card.innerHTML = `<div class="card-num">Chapter ${i + 1}</div><div class="card-icon">${ch.icon}</div><h3>${ch.title}</h3><div class="done-badge">✅</div>`;
+    card.onclick = () => { currentLevel = 0; showChapter(i); };
+    g0.appendChild(card);
   });
+  const l1Done = CHAPTERS.filter((_, i) => isComplete(i, 0)).length;
+  document.getElementById('l1-status').textContent = l1Done === CHAPTERS.length ? '✅ Complete!' : `${l1Done}/${CHAPTERS.length} done`;
+
+  // Level 2 grid
+  const g1 = document.getElementById('home-grid-1');
+  g1.innerHTML = '';
+  const l1Complete = isLevelComplete(0);
+  document.getElementById('l2-lock-banner').style.display = l1Complete ? 'none' : 'block';
+  CHAPTERS_L2.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'chapter-card' + (isComplete(i, 1) ? ' done' : '') + (l1Complete ? '' : ' locked');
+    card.style.borderTopColor = ch.color;
+    card.innerHTML = `<div class="card-num">Chapter ${i + 1}</div><div class="card-icon">${ch.icon}</div><h3>${ch.title}</h3><div class="done-badge">✅</div>`;
+    card.onclick = () => {
+      if (!l1Complete) { showUnlockToast('🔒 Complete Level 1 first!'); return; }
+      currentLevel = 1;
+      updateNavList();
+      showChapter(i);
+    };
+    g1.appendChild(card);
+  });
+  const l2Done = CHAPTERS_L2.filter((_, i) => isComplete(i, 1)).length;
+  document.getElementById('l2-status').textContent = !l1Complete ? '🔒 Locked' : (l2Done === CHAPTERS_L2.length ? '✅ Complete!' : `${l2Done}/${CHAPTERS_L2.length} done`);
 }
 
 // ============================================================
@@ -892,6 +1196,7 @@ function showHome() {
   document.getElementById('home-screen').style.display = 'block';
   document.getElementById('chapter-view').style.display = 'none';
   updateNavList();
+  updateHomeGrid();
 }
 
 function showChapter(index) {
@@ -903,30 +1208,32 @@ function showChapter(index) {
   updateNavList();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  const chs = ALL_LEVELS[currentLevel];
   const prevBtn = document.getElementById('btn-prev');
   const nextBtn = document.getElementById('btn-next');
   prevBtn.disabled = index === 0;
   prevBtn.style.opacity = index === 0 ? '.4' : '1';
-  nextBtn.disabled = index === CHAPTERS.length - 1;
-  nextBtn.style.opacity = index === CHAPTERS.length - 1 ? '.4' : '1';
+  nextBtn.disabled = index === chs.length - 1;
+  nextBtn.style.opacity = index === chs.length - 1 ? '.4' : '1';
 }
 
 function goChapter(delta) {
   const next = currentChapter + delta;
-  if (next >= 0 && next < CHAPTERS.length) showChapter(next);
+  const chs  = ALL_LEVELS[currentLevel];
+  if (next >= 0 && next < chs.length) showChapter(next);
 }
 
 // ============================================================
 //  RENDER CHAPTER
 // ============================================================
 function renderChapter(index) {
-  const ch = CHAPTERS[index];
+  const ch = ALL_LEVELS[currentLevel][index];
   const content = document.getElementById('chapter-content');
 
   // Header
   let html = `
     <div class="chapter-header" style="border-left-color:${ch.color}">
-      <div class="ch-num">Chapter ${index + 1} of ${CHAPTERS.length}</div>
+      <div class="ch-num">Level ${currentLevel + 1} &nbsp;·&nbsp; Chapter ${index + 1} of ${ALL_LEVELS[currentLevel].length}</div>
       <h2>${ch.icon} ${ch.title}</h2>
       <p class="ch-intro">${ch.intro}</p>
       <div class="ch-actions">
@@ -962,8 +1269,8 @@ function renderChapter(index) {
   html += buildQuiz(ch, index);
 
   // Mark Complete button
-  const done = isComplete(index);
-  const qPassed = isQuizPassed(index);
+  const done    = isComplete(index, currentLevel);
+  const qPassed = isQuizPassed(index, currentLevel);
   html += `
     <div class="complete-wrap">
       <button class="btn-complete ${done ? 'done' : ''}" id="complete-btn-${index}"
@@ -1003,14 +1310,13 @@ function buildQuiz(ch, chIndex) {
 }
 
 function checkQuiz(chIndex) {
-  const ch = CHAPTERS[chIndex];
+  const ch = ALL_LEVELS[currentLevel][chIndex];
   let allCorrect = true;
   ch.quiz.forEach((q, qi) => {
     const selected = document.querySelector(`input[name="q-${chIndex}-${qi}"]:checked`);
     const fb = document.getElementById(`qf-${chIndex}-${qi}`);
     if (!selected) { allCorrect = false; return; }
     const val = parseInt(selected.value);
-    // Clear previous styling
     q.options.forEach((_, oi) => {
       const lbl = document.getElementById(`opt-${chIndex}-${qi}-${oi}`);
       lbl.classList.remove('correct', 'wrong');
@@ -1027,11 +1333,11 @@ function checkQuiz(chIndex) {
   });
 
   if (allCorrect) {
-    quizPassed[chIndex] = true;
-    localStorage.setItem('cska_quiz', JSON.stringify(quizPassed));
-    const btn = document.getElementById(`complete-btn-${chIndex}`);
+    QUIZ_PASSED[currentLevel][chIndex] = true;
+    localStorage.setItem('cska_quiz_' + currentLevel, JSON.stringify(QUIZ_PASSED[currentLevel]));
+    const btn  = document.getElementById(`complete-btn-${chIndex}`);
     const hint = document.getElementById(`complete-hint-${chIndex}`);
-    if (!isComplete(chIndex)) {
+    if (!isComplete(chIndex, currentLevel)) {
       btn.disabled = false;
       hint.textContent = '🎉 All correct! You can now mark this chapter complete!';
     }
@@ -1041,8 +1347,8 @@ function checkQuiz(chIndex) {
 }
 
 function onMarkComplete(index) {
-  markComplete(index);
-  const btn = document.getElementById(`complete-btn-${index}`);
+  markComplete(index, currentLevel);
+  const btn  = document.getElementById(`complete-btn-${index}`);
   const hint = document.getElementById(`complete-hint-${index}`);
   btn.textContent = '✅ Completed!';
   btn.classList.add('done');
@@ -1055,7 +1361,7 @@ function onMarkComplete(index) {
 // ============================================================
 function readAloud(index) {
   stopRead();
-  const ch = CHAPTERS[index];
+  const ch = ALL_LEVELS[currentLevel][index];
   let text = ch.title + '. ' + ch.intro + ' ';
   ch.sections.forEach(s => { text += s.heading + '. ' + s.text.replace(/<[^>]+>/g, '') + '. '; });
   text += 'Did you know? ' + ch.funFact.replace(/<[^>]+>/g, '');
@@ -1072,8 +1378,17 @@ function stopRead() {
 // ============================================================
 //  CONFETTI + CELEBRATION
 // ============================================================
-function triggerCelebration() {
+function triggerCelebration(lv) {
+  lv = (lv !== undefined) ? lv : 0;
   runConfetti();
+  const desc = document.getElementById('cert-desc');
+  if (lv === 1) {
+    desc.innerHTML = 'For completing <strong>both Level 1 AND Level 2</strong> of<br><strong>CS Kids Academy</strong> — an outstanding achievement! 🌟🚀';
+  } else {
+    desc.innerHTML = 'For completing all Level 1 chapters of<br><strong>CS Kids Academy</strong> and becoming a Computer Science Explorer! 🚀';
+    // Announce Level 2 unlock
+    setTimeout(() => showUnlockToast('🚀 Level 2: Code & Create is now unlocked!'), 600);
+  }
   document.getElementById('cert-overlay').classList.add('show');
 }
 
@@ -1187,6 +1502,8 @@ document.getElementById('lang-select').addEventListener('change', function(e) {
 updateProgressBar();
 updateNavList();
 updateHomeGrid();
+// Sync Level 2 tab enabled state on load
+document.getElementById('tab-1').disabled = !isLevelComplete(0);
 </script>
 
 <!-- Google Translate Widget (free, no API key needed) -->
